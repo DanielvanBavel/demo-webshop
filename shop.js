@@ -116,3 +116,5 @@ window.removeFromBasket = function (index) {
   origRemoveFromBasket(index);
   renderBasketIndicator();
 };
+
+
