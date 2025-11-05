@@ -26,9 +26,10 @@ function clearBasket() {
   localStorage.removeItem("basket");
 }
 
-function removeFromBasket(index) {
+function removeFromBasket(product) {
   const basket = getBasket();
-  if (index >= 0 && index < basket.length) {
+  const index = basket.indexOf(product);
+  if (index !== -1) {
     basket.splice(index, 1);
     localStorage.setItem("basket", JSON.stringify(basket));
   }
@@ -45,9 +46,18 @@ function renderBasket() {
     if (cartButtonsRow) cartButtonsRow.style.display = "none";
     return;
   }
-  basket.forEach((product, index) => {
+  
+  // Count occurrences of each product
+  const productCounts = {};
+  basket.forEach((product) => {
+    productCounts[product] = (productCounts[product] || 0) + 1;
+  });
+  
+  // Display each unique product with its quantity
+  Object.keys(productCounts).forEach((product) => {
     const item = PRODUCTS[product];
     if (item) {
+      const quantity = productCounts[product];
       const li = document.createElement("li");
       li.style.display = "flex";
       li.style.alignItems = "center";
@@ -55,14 +65,14 @@ function renderBasket() {
       li.style.gap = "1rem";
       
       const itemContent = document.createElement("span");
-      itemContent.innerHTML = `<span class='basket-emoji'>${item.emoji}</span> <span>${item.name}</span>`;
+      itemContent.innerHTML = `<span class='basket-emoji'>${item.emoji}</span> <span>${quantity}x ${item.name}</span>`;
       
       const removeBtn = document.createElement("button");
       removeBtn.textContent = "Remove";
       removeBtn.className = "cart-action-btn";
-      removeBtn.setAttribute("aria-label", `Remove ${item.name} from basket`);
+      removeBtn.setAttribute("aria-label", `Remove one ${item.name} from basket`);
       removeBtn.onclick = function () {
-        removeFromBasket(index);
+        removeFromBasket(product);
         renderBasket();
         renderBasketIndicator();
       };
@@ -112,8 +122,8 @@ window.clearBasket = function () {
   renderBasketIndicator();
 };
 const origRemoveFromBasket = window.removeFromBasket;
-window.removeFromBasket = function (index) {
-  origRemoveFromBasket(index);
+window.removeFromBasket = function (product) {
+  origRemoveFromBasket(product);
   renderBasketIndicator();
 };
 
