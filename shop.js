@@ -26,6 +26,14 @@ function clearBasket() {
   localStorage.removeItem("basket");
 }
 
+function removeFromBasket(index) {
+  const basket = getBasket();
+  if (index >= 0 && index < basket.length) {
+    basket.splice(index, 1);
+    localStorage.setItem("basket", JSON.stringify(basket));
+  }
+}
+
 function renderBasket() {
   const basket = getBasket();
   const basketList = document.getElementById("basketList");
@@ -37,11 +45,30 @@ function renderBasket() {
     if (cartButtonsRow) cartButtonsRow.style.display = "none";
     return;
   }
-  basket.forEach((product) => {
+  basket.forEach((product, index) => {
     const item = PRODUCTS[product];
     if (item) {
       const li = document.createElement("li");
-      li.innerHTML = `<span class='basket-emoji'>${item.emoji}</span> <span>${item.name}</span>`;
+      li.style.display = "flex";
+      li.style.alignItems = "center";
+      li.style.justifyContent = "space-between";
+      li.style.gap = "1rem";
+      
+      const itemContent = document.createElement("span");
+      itemContent.innerHTML = `<span class='basket-emoji'>${item.emoji}</span> <span>${item.name}</span>`;
+      
+      const removeBtn = document.createElement("button");
+      removeBtn.textContent = "Remove";
+      removeBtn.className = "cart-action-btn";
+      removeBtn.setAttribute("aria-label", `Remove ${item.name} from basket`);
+      removeBtn.onclick = function () {
+        removeFromBasket(index);
+        renderBasket();
+        renderBasketIndicator();
+      };
+      
+      li.appendChild(itemContent);
+      li.appendChild(removeBtn);
       basketList.appendChild(li);
     }
   });
@@ -82,5 +109,10 @@ window.addToBasket = function (product) {
 const origClearBasket = window.clearBasket;
 window.clearBasket = function () {
   origClearBasket();
+  renderBasketIndicator();
+};
+const origRemoveFromBasket = window.removeFromBasket;
+window.removeFromBasket = function (index) {
+  origRemoveFromBasket(index);
   renderBasketIndicator();
 };
